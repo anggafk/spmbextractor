@@ -38,22 +38,18 @@ function uraiAlamat(alamatMentah) {
     
     log("Menjalankan pemisahan komponen alamat dari kanan ke kiri...", "process");
     
-    // Bersihkan enter dan spasi berlebih
     let cleanAddr = alamatMentah.replace(/\r?\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
     let parts = cleanAddr.split(',').map(p => p.trim());
     
     let prov = ""; let kota = ""; let kec = ""; let desa = ""; let rtrw = ""; let sisa = "";
 
-    // Potong mundur dari kanan ke kiri
     if (parts.length > 0) prov = parts.pop().replace(/Prov\.\s*/i, "").trim();
     if (parts.length > 0) kota = parts.pop().replace(/Kab\.\s*/i, "").replace(/Kota\.\s*/i, "").trim();
     if (parts.length > 0) kec = parts.pop().replace(/Kec\.\s*/i, "").trim();
     if (parts.length > 0) desa = parts.pop().replace(/Kel\.\s*/i, "").replace(/Desa\.\s*/i, "").trim();
 
-    // Gabungkan kembali sisa teks paling kiri untuk dicari RT/RW nya
     let sisaTeks = parts.join(', ');
     
-    // Deteksi pola RT/RW menggunakan Regex Pintar
     let rtrwMatch = sisaTeks.match(/(RT\s*[\.\/\s]?\s*\d+\s*[\/\s]?\s*RW\s*[\.\/\s]?\s*\d+)/i) || 
                     sisaTeks.match(/(RT\/RW\s*\d+\/\d+)/i) ||
                     sisaTeks.match(/(\d+\/\d+)/);
@@ -66,7 +62,7 @@ function uraiAlamat(alamatMentah) {
         sisa = sisaTeks;
     }
 
-    log(`Hasil urai -> Alamat: ${sisa} | RT/RW: ${rtrw} | Desa: ${desa} | Kec: ${kec}`, "success");
+    log(`Hasil urai -> Alamat: ${sisa} | RT/RW: ${rtrw} | Desa: ${desa}`, "success");
     return { sisa, rtrw, desa, kec, kota, prov };
 }
 
@@ -98,14 +94,15 @@ pdfFileInput.addEventListener("change", async (e) => {
             const pdf = await pdfjsLib.getDocument(typedarray).promise;
             let fullText = "";
 
-            log(`Membaca isi teks dokumen PDF (${pdf.numPages} halaman)...`, "process");
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join("\n");
-                fullText += pageText + "\n";
+                const pageText = textContent.items.map(item => item.str).join(" ");
+                fullText += pageText + " ";
             }
 
+            // Bersihkan spasi berlebih agar pencarian berbasis spasi tunggal akurat
+            fullText = fullText.replace(/\s+/g, ' ');
             evaluasiPolaTeks(fullText);
         };
         reader.readAsArrayBuffer(file);
@@ -114,48 +111,74 @@ pdfFileInput.addEventListener("change", async (e) => {
     }
 });
 
-// Penentu tipe dokumen berdasarkan kata kunci unik di dalam PDF
 function evaluasiPolaTeks(text) {
     log("Menganalisis jenis tanda pengenal berkas...", "process");
     
-    if (text.includes("TANDA BUKTI PENDAFTARAN") || text.includes("Nomor Pendaftaran")) {
+    if (text.includes("PENDAFTARAN") && (text.includes("Nomor Pendaftaran") || text.includes("Nilai Akhir"))) {
         log("Tipe Dokumen Terdeteksi: BUKTI PENDAFTARAN SEKOLAH", "success");
         ekstrakDataPendaftaran(text);
     } 
-    else if (text.includes("TANDA BUKTI APPROVAL") || text.includes("Verifikasi Akun") || text.includes("KODE AKTIVASI")) {
-        log("Tipe Dokumen Terdeteksi: BUKTI VERIFIKASI/APPROVAL AKUN", "success");
+    else if (text.includes("PENGAJUAN AKUN") || text.includes("VERIFIKASI") || text.includes("APPROVAL")) {
+        log("Tipe Dokumen Terdeteksi: BUKTI AJUAN/VERIFIKASI AKUN", "success");
         ekstrakDataVerifikasi(text);
     } 
     else {
-        log("Pola teks tidak beraturan. Mencoba ekstrasi dengan mode fleksibel...", "warning");
-        if (text.includes("Jalur") && text.includes("Waktu")) {
-            ekstrakDataPendaftaran(text);
-        } else {
-            ekstrakDataVerifikasi(text);
-        }
+        log("Pola teks tidak kaku. Menggunakan parser cerdas tipe akun...", "warning");
+        ekstrakDataVerifikasi(text);
     }
 }
 
-// Parsers khusus dokumen lembar pendaftaran pilihan jurusan
-function ekstrakDataPendaftaran(text) {
-    const dapatkanTeks = (regex, def = "") => {
-        const match = text.match(regex);
-        return match ? match[1].trim() : def;
+// 1. PARSER 2026 UNTUK DATA AKUN / VERIFIKASI (SEPERTI DANY)
+function ekstrakDataVerifikasi(text) {
+    const dapatkanTeks = (mulai, selesai) => {
+        let idxMulai = text.indexOf(mulai);
+        if (idxMulai === -1) return "";
+        idxMulai += mulai.length;
+        let idxSelesai = text.indexOf(selesai, idxMulai);
+        if (idxSelesai === -1) return text.substring(idxMulai).trim();
+        return text.substring(idxMulai, idxSelesai).trim();
     };
 
-    const rawAlamat = dapatkanTeks(/Alamat\n*\"?,\"?\"?([^\"\n]+)/) || dapatkanTeks(/Alamat\s*:\s*([^\n]+)/);
+    const nomorPeserta = dapatkanTeks("Nomor Peserta ", " Nama Lengkap");
+    const namaLengkap = dapatkanTeks("Nama Lengkap ", " Jenis Kelamin");
+    const jenisKelamin = dapatkanTeks("Jenis Kelamin ", " Tempat & Tgl. Lahir");
+    const ttlMentah = dapatkanTeks("Tempat & Tgl. Lahir ", " Alamat");
+    const rawAlamat = dapatkanTeks("Alamat ", " Sekolah Asal");
+    const sekolahAsal = dapatkanTeks("Sekolah Asal ", " Jenis Lulusan");
+    
+    const afirmasiMiskin = dapatkanTeks("Status Siswa Keluarga Ekonomi Tidak Mampu ", " Status Anak Panti Asuhan");
+    const afirmasiPanti = dapatkanTeks("Status Anak Panti Asuhan ", " Status Anak Tidak Sekolah");
+    const afirmasiAts = dapatkanTeks("Status Anak Tidak Sekolah (Putus Sekolah) ", " Status Anak Guru");
+    const namaKejuaraan = dapatkanTeks("Nama Kejuaraan ", " Nomor Piagam");
+    const organisasi = dapatkanTeks("Organisasi ", " Nilai Organisasi");
+    const statusDomisili = dapatkanTeks("Status Domisili Siswa ", " NIK");
+    const tglCetakKk = dapatkanTeks("Tanggal Cetak Kartu Keluarga ", " No Telepon");
+    const noWa = dapatkanTeks("No Telepon (WA) ", " *");
+    
+    // Cari Rata-Rata Rapor (Mencari angka decimal di sekitar teks rapor)
+    let nilaiRapor = "0";
+    let raporMatch = text.match(/Rata - Rata Nilai Rapor\s*([\d\.]+)/i) || text.match(/(\d{2}\.\d{2})\s*Keterangan/);
+    if (raporMatch) nilaiRapor = raporMatch[1];
+
+    // Ekstraksi Koordinat Geografis Langsung dari Text PDF 2026
+    let koordinatMaps = "";
+    let latMatch = text.match(/Latitude\s*([\-\d\.]+)/i);
+    let lonMatch = text.match(/Longtitude\s*([\d\.]+)/i);
+    if (latMatch && lonMatch) {
+        koordinatMaps = `https://www.google.com/maps?q=${latMatch[1]},${lonMatch[1]}`;
+    }
+
     const alamatUrai = uraiAlamat(rawAlamat);
-    const ttlUrai = uraiTempatTanggalLahir(dapatkanTeks(/Tempat & Tgl\. Lahir\n*\"?,\"?\"?([^\"\n]+)/));
+    const ttlUrai = uraiTempatTanggalLahir(ttlMentah);
 
     currentExtractedData = {
-        tipe_berkas: "PENDAFTARAN",
-        nomor_pendaftaran: dapatkanTeks(/Nomor Pendaftaran\n*\"?,\"?\"?([^\"\n]+)/),
-        nomor_peserta: dapatkanTeks(/Nomor Peserta\n*\"?,\"?\"?([^\"\n]+)/),
-        lokasi_pendaftaran: dapatkanTeks(/Lokasi Pendaftaran\n*\"?,\"?\"?([^\"\n]+)/) + " " + dapatkanTeks(/Teknik\s+[^\n]+/),
-        jalur: dapatkanTeks(/Jalur\n*\"?,\"?\"?([^\"\n]+)/),
-        waktu: dapatkanTeks(/Waktu\n*\"?,\"?\"?([^\"\n]+)/),
-        nama: dapatkanTeks(/Nama Lengkap\n*\"?,\"?\"?([^\"\n]+)/),
-        jenis_kelamin: dapatkanTeks(/Jenis Kelamin\n*\"?,\"?\"?([^\"\n]+)/),
+        tipe_berkas: "AJUAN_AKUN",
+        ajuan_akun: koordinatMaps ? "Ya" : "Tidak", 
+        verifikasi: koordinatMaps ? "Tidak" : "Ya",
+        nomor_peserta: nomorPeserta,
+        nisn: nomorPeserta,
+        nama: namaLengkap,
+        jenis_kelamin: jenisKelamin,
         tempat_lahir: ttlUrai.tempat,
         tanggal_lahir: ttlUrai.tanggal,
         alamat_sisa: alamatUrai.sisa,
@@ -164,69 +187,86 @@ function ekstrakDataPendaftaran(text) {
         kecamatan: alamatUrai.kec,
         kota: alamatUrai.kota,
         provinsi: alamatUrai.prov,
-        sekolah_asal: dapatkanTeks(/Sekolah Asal\n*\"?,\"?\"?([^\"\n]+)/),
-        jenis_lulusan: dapatkanTeks(/Jenis Lulusan\n*\"?,\"?\"?([^\"\n]+)/),
-        tahun_lulus: dapatkanTeks(/Tahun Lulus\n*\"?,\"?\"?([^\"\n]+)/),
-        pilihan_sekolah: dapatkanTeks(/Daftar Pilihan Sekolah\n*\"?,\"?\"?([^\"\n]+)/),
-        nilai_akhir: dapatkanTeks(/Nilai Akhir\n*\"?,\"?\"?([^\"\n]+)/, "0"),
-        jarak: dapatkanTeks(/Jarak\n*\"?,\"?\"?([^\"\n]+)/),
-        usia: dapatkanTeks(/Usia\n*\"?,\"?\"?([^\"\n]+)/)
+        sekolah_asal: sekolahAsal,
+        sekolah_asal_dari: "Dalam Provinsi",
+        afirmasi_miskin: afirmasiMiskin || "Tidak",
+        afirmasi_panti: afirmasiPanti || "Tidak",
+        afirmasi_ats: afirmasiAts || "Tidak",
+        nama_kejuaraan: namaKejuaraan === "Tidak ada" ? "" : namaKejuaraan,
+        nilai_kejuaraan: "0",
+        organisasi: organisasi,
+        nilai_organisasi: "0",
+        nilai_rapor: nilaiRapor,
+        status_domisili: statusDomisili,
+        tgl_cetak_kk: tglCetakKk,
+        no_wa: noWa,
+        surat_sehat: "Ya",
+        disabilitas: "Tidak",
+        prestasi_khusus: "Tidak",
+        wilayah_mutasi: "",
+        operator: "Sigit Hantoro",
+        maps_url: koordinatMaps
     };
 
     tampilkanFormulirData(currentExtractedData);
 }
 
-// Parsers khusus dokumen lembar akun / verifikasi approval
-function ekstrakDataVerifikasi(text) {
-    const dapatkanTeks = (regex, def = "") => {
-        const match = text.match(regex);
-        return match ? match[1].trim() : def;
+// 2. PARSER 2026 UNTUK DATA SELEKSI PENDAFTARAN (SEPERTI BEMBY)
+function ekstrakDataPendaftaran(text) {
+    const dapatkanTeks = (mulai, selesai) => {
+        let idxMulai = text.indexOf(mulai);
+        if (idxMulai === -1) return "";
+        idxMulai += mulai.length;
+        let idxSelesai = text.indexOf(selesai, idxMulai);
+        if (idxSelesai === -1) return text.substring(idxMulai).trim();
+        return text.substring(idxMulai, idxSelesai).trim();
     };
 
-    const rawAlamat = dapatkanTeks(/Alamat\n*\"?,\"?\"?([^\"\n]+)/);
-    const alamatUrai = uraiAlamat(rawAlamat);
-    const ttlUrai = uraiTempatTanggalLahir(dapatkanTeks(/Tempat & Tgl\. Lahir\n*\"?,\"?\"?([^\"\n]+)/));
+    const noPendaftaran = dapatkanTeks("Nomor Pendaftaran ", " Lokasi Pendaftaran");
+    const lokasiPendaftaran = dapatkanTeks("Lokasi Pendaftaran ", " Jalur");
+    const jalur = dapatkanTeks("Jalur ", " Waktu");
+    const waktu = dapatkanTeks("Waktu ", " Biodata");
+    
+    const nomorPeserta = dapatkanTeks("Nomor Peserta ", " Nama Lengkap");
+    const namaLengkap = dapatkanTeks("Nama Lengkap ", " Jenis Kelamin");
+    const jenisKelamin = dapatkanTeks("Jenis Kelamin ", " Tempat & Tgl. Lahir");
+    const ttlMentah = dapatkanTeks("Tempat & Tgl. Lahir ", " Alamat");
+    const rawAlamat = dapatkanTeks("Alamat ", " Sekolah Asal");
+    const sekolahAsal = dapatkanTeks("Sekolah Asal ", " Jenis Lulusan");
+    const jenisLulusan = dapatkanTeks("Jenis Lulusan ", " Tahun Lulus");
+    const tahunLulus = dapatkanTeks("Tahun Lulus ", " Daftar Pilihan");
 
-    // Ekstraksi Link Google Maps Koordinat (Jika file ajuan akun awal yang dimasukkan)
-    let koordinatMaps = "";
-    const mapsMatch = text.match(/https:\/\/maps\.google\.com\/[^\s\n\"]+/i) || text.match(/http:\/\/googleusercontent\.com\/maps[^\s\n\"]+/i);
-    if (mapsMatch) koordinatMaps = mapsMatch[0].trim();
+    const nilaiAkhir = dapatkanTeks("Nilai Akhir ", " Jarak");
+    const jarak = dapatkanTeks("Jarak ", " Usia");
+    const usia = dapatkanTeks("Usia ", " *");
+
+    const alamatUrai = uraiAlamat(rawAlamat);
+    const ttlUrai = uraiTempatTanggalLahir(ttlMentah);
 
     currentExtractedData = {
-        tipe_berkas: "AJUAN_AKUN",
-        ajuan_akun: koordinatMaps ? "Ya" : "Tidak", 
-        verifikasi: koordinatMaps ? "Tidak" : "Ya",
-        nomor_peserta: dapatkanTeks(/Nomor Peserta\n*\"?,\"?\"?([^\"\n]+)/),
-        nisn: dapatkanTeks(/NISN\n*\"?,\"?\"?([^\"\n]+)/),
-        nama: dapatkanTeks(/Nama Lengkap\n*\"?,\"?\"?([^\"\n]+)/),
-        jenis_kelamin: dapatkanTeks(/Kelamin\n*\"?,\"?\"?([^\"\n]+)/),
+        tipe_berkas: "PENDAFTARAN",
+        nomor_pendaftaran: noPendaftaran,
+        nomor_peserta: nomorPeserta,
+        lokasi_pendaftaran: lokasiPendaftaran,
+        jalur: jalur,
+        waktu: waktu,
+        nama: namaLengkap,
+        jenis_kelamin: jenisKelamin,
         tempat_lahir: ttlUrai.tempat,
         tanggal_lahir: ttlUrai.tanggal,
         alamat_sisa: alamatUrai.sisa,
         rtrw: alamatUrai.rtrw,
-        desa: alamatUrai.desa || dapatkanTeks(/Desa\n*\"?,\"?\"?([^\"\n]+)/, "-"),
+        desa: alamatUrai.desa,
         kecamatan: alamatUrai.kec,
         kota: alamatUrai.kota,
         provinsi: alamatUrai.prov,
-        sekolah_asal: dapatkanTeks(/Sekolah Asal\n*\"?,\"?\"?([^\"\n]+)/),
-        sekolah_asal_dari: "Dalam Provinsi",
-        afirmasi_miskin: dapatkanTeks(/Status Siswa Keluarga Ekonomi Tidak Mampu\n*\"?,\"?\"?([^\"\n]+)/, "Tidak"),
-        afirmasi_panti: dapatkanTeks(/Status Anak Panti Asuhan\n*\"?,\"?\"?([^\"\n]+)/, "Tidak"),
-        afirmasi_ats: dapatkanTeks(/Status Anak Tidak Sekolah[^\n]*\n*\"?,\"?\"?([^\"\n]+)/, "Tidak"),
-        nama_kejuaraan: dapatkanTeks(/Nama Kejuaraan\n*\"?,\"?\"?([^\"\n]+)/),
-        nilai_kejuaraan: dapatkanTeks(/Nilai Kejuaraan\n*\"?,\"?\"?([^\"\n]+)/, "0"),
-        organisasi: dapatkanTeks(/Organisasi\n*\"?,\"?\"?([^\"\n]+)/, "Tidak ada organisasi"),
-        nilai_organisasi: dapatkanTeks(/Nilai Organisasi\n*\"?,\"?\"?([^\"\n]+)/, "0"),
-        nilai_rapor: dapatkanTeks(/Nilai Rata-rata Rapor\n*\"?,\"?\"?([^\"\n]+)/, "0"),
-        status_domisili: dapatkanTeks(/Status Domisili Siswa\n*\"?,\"?\"?([^\"\n]+)/),
-        tgl_cetak_kk: dapatkanTeks(/Tanggal Cetak Kartu Keluarga\n*\"?,\"?\"?([^\"\n]+)/),
-        no_wa: dapatkanTeks(/No Telepon \(WA\)\n*[^\n]*\n*\"?,\"?\"?([^\"\n]+)/),
-        surat_sehat: dapatkanTeks(/Surat Keterangan Sehat[^\n]*\n*\"?,\"?\"?([^\"\n]+)/, "Ya"),
-        disabilitas: dapatkanTeks(/Disabilitas\n*[^\n]*\n*\"?,\"?\"?([^\"\n]+)/, "Tidak"),
-        prestasi_khusus: dapatkanTeks(/Prestasi Khusus\n*[^\n]*\n*\"?,\"?\"?([^\"\n]+)/, "Tidak"),
-        wilayah_mutasi: dapatkanTeks(/Kab\/Kota Sesuai Wilayah Surat Tugas Mutasi\n*[^\n]*\n*\"?,\"?\"?([^\"\n]+)/),
-        operator: dapatkanTeks(/Dicetak oleh ([^ \n\r\t,]+ [^ \n\r\t,]+)/) || "Sigit Hantoro",
-        maps_url: koordinatMaps
+        sekolah_asal: sekolahAsal,
+        jenis_lulusan: jenisLulusan,
+        tahun_lulus: tahunLulus,
+        pilihan_sekolah: lokasiPendaftaran.split(" ")[0] || "SMKN 1 KISMANTORO",
+        nilai_akhir: nilaiAkhir,
+        jarak: jarak,
+        usia: usia
     };
 
     tampilkanFormulirData(currentExtractedData);
@@ -248,7 +288,6 @@ function tampilkanFormulirData(data) {
     indicatorAcun.className = "bg-slate-900 border border-slate-800 text-slate-600 rounded-xl py-2.5 flex items-center justify-center gap-1.5";
     indicatorDaftar.className = "bg-slate-900 border border-slate-800 text-slate-600 rounded-xl py-2.5 flex items-center justify-center gap-1.5";
 
-    // Set Value Global Field
     document.getElementById("out_no_peserta").value = data.nomor_peserta || "";
     document.getElementById("out_nama").value = data.nama || "";
     document.getElementById("out_jk").value = data.jenis_kelamin || "";
