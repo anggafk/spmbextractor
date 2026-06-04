@@ -539,7 +539,8 @@ function parseAndFill(text) {
   const f_waktu = parseWaktu(waktu);
 
   // --- Biodata ---
-  const namaLengkap = ambil(t, /Nama Lengkap\s+([A-Z][A-Z ]+)/);
+  // Nama dibatasi sampai sebelum kata "Jenis Kelamin"
+  const namaLengkap = ambil(t, /Nama Lengkap\s+([A-Z][A-Z ]+?)(?=\s+Jenis Kelamin)/i);
   const jenisKelamin = t.includes('Perempuan') ? 'Perempuan' : 'Laki - laki';
 
   // Tempat & Tgl Lahir: "WONOGIRI, 2011-03-14"
@@ -574,8 +575,9 @@ function parseAndFill(text) {
 
   // --- Data Tambahan ---
   const sekolahAsalDari = t.includes('Dalam Provinsi') ? 'Dalam Provinsi' : 'Luar Provinsi';
-  const noTelepon = ambil(t, /No Telepon \(WA\)\s+([\d]+)/i) ||
-                    ambil(t, /No\.?\s*Telp?(?:epon)?\s*\(?WA\)?\s*([\d]+)/i);
+  // Format di PDF: "No Telepon (WA) 089524897157"
+  const noTelepon = ambil(t, /No\s+Telepon\s*\(WA\)\s+([\d]+)/i) ||
+                    ambil(t, /No\.?\s*Telp?(?:epon)?\s*\(?WA\)?\s*(0[\d]{8,12})/i);
   const tglKK = ambil(t, /Tanggal Cetak Kartu Keluarga\s+([\d\-\/]+)/i);
 
   // Isi form
