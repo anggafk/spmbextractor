@@ -1,607 +1,738 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Ajuan Akun – SPMB SMK Negeri 1 Kismantoro</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ekstrak Ajuan Akun SPMB</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
-    :root {
-      --navy:   #002D72;
-      --navy2:  #003D99;
-      --accent: #E8B000;
-      --bg:     #F5F7FA;
-      --white:  #FFFFFF;
-      --text:   #1A1A2E;
-      --muted:  #6B7280;
-      --border: #D1D9E6;
-      --success:#0A7A4B;
-      --error:  #C0392B;
-      --radius: 0px;
-    }
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --border: #e2e6ed;
+    --primary: #1a56db;
+    --primary-light: #ebf0ff;
+    --success: #057a55;
+    --success-light: #def7ec;
+    --warning: #c27803;
+    --warning-light: #fdf6b2;
+    --danger: #c81e1e;
+    --danger-light: #fde8e8;
+    --text: #111928;
+    --text-secondary: #6b7280;
+    --text-hint: #9ca3af;
+    --radius: 10px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+  }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── HEADER ── */
-    header {
-      background: var(--navy);
-      color: var(--white);
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      height: 64px;
-      border-bottom: 3px solid var(--accent);
-    }
-    header img { height: 40px; }
-    .header-text { display: flex; flex-direction: column; }
-    .header-text span:first-child { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
-    .header-text span:last-child  { font-size: 11px; font-weight: 400; opacity: 0.75; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
 
-    /* ── BREADCRUMB ── */
-    .breadcrumb {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 32px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .breadcrumb a { color: var(--navy); text-decoration: none; font-weight: 500; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb span { margin: 0 6px; }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-    /* ── MAIN ── */
-    main {
-      flex: 1;
-      padding: 40px 32px;
-      max-width: 720px;
-      margin: 0 auto;
-      width: 100%;
-    }
+  header .logo {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px; font-weight: 600;
+  }
 
-    .page-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--navy);
-      margin-bottom: 4px;
-    }
-    .page-subtitle {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 32px;
-    }
+  header h1 { font-size: 15px; font-weight: 600; color: var(--text); }
+  header p { font-size: 12px; color: var(--text-secondary); }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      padding: 32px;
-      margin-bottom: 24px;
-    }
-    .card-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--navy);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--navy);
-      margin-bottom: 24px;
-    }
+  .main { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
 
-    /* ── UPLOAD AREA ── */
-    .upload-area {
-      border: 2px dashed var(--border);
-      padding: 48px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-    }
-    .upload-area:hover, .upload-area.drag-over {
-      border-color: var(--navy);
-      background: #F0F4FF;
-    }
-    .upload-area input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-    .upload-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 16px;
-      background: var(--navy);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .upload-icon svg { width: 24px; height: 24px; fill: none; stroke: white; stroke-width: 2; }
-    .upload-label { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
-    .upload-hint  { font-size: 12px; color: var(--muted); }
+  /* Upload area */
+  .upload-card {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .upload-card:hover, .upload-card.drag { border-color: var(--primary); background: var(--primary-light); }
+  .upload-card input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 36px; margin-bottom: 10px; }
+  .upload-card h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .upload-card p { font-size: 13px; color: var(--text-secondary); }
+  .upload-card .btn-browse {
+    display: inline-block; margin-top: 14px;
+    background: var(--primary); color: white;
+    padding: 8px 20px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; pointer-events: none;
+  }
 
-    /* file selected state */
-    .file-selected {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      background: #EEF2FF;
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      margin-top: 12px;
-    }
-    .file-selected.show { display: flex; }
-    .file-icon { width: 36px; height: 36px; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .file-icon svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; }
-    .file-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; word-break: break-all; }
-    .file-size { font-size: 11px; color: var(--muted); }
-    .file-remove { background: none; border: none; cursor: pointer; color: var(--error); font-size: 18px; padding: 0 4px; }
+  /* Status bar */
+  #statusBar {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  #statusBar.info { background: var(--primary-light); color: var(--primary); display: flex; }
+  #statusBar.success { background: var(--success-light); color: var(--success); display: flex; }
+  #statusBar.warning { background: var(--warning-light); color: var(--warning); display: flex; }
+  #statusBar.error { background: var(--danger-light); color: var(--danger); display: flex; }
 
-    /* ── PREVIEW DATA ── */
-    .preview-section { display: none; }
-    .preview-section.show { display: block; }
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid currentColor;
+    border-top-color: transparent; border-radius: 50%;
+    animation: spin 0.7s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-    .data-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      margin-bottom: 0;
-    }
-    .data-item {
-      background: var(--white);
-      padding: 10px 14px;
-    }
-    .data-item.full { grid-column: 1 / -1; }
-    .data-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-    .data-value { font-size: 13px; color: var(--text); font-weight: 500; min-height: 18px; }
-    .data-value.empty { color: var(--muted); font-style: italic; font-weight: 400; }
+  /* Preview form */
+  #previewSection { display: none; margin-top: 24px; }
 
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .badge-ya  { background: #D1FAE5; color: var(--success); }
-    .badge-tidak { background: #FEE2E2; color: var(--error); }
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
 
-    /* ── ALERT ── */
-    .alert {
-      display: none;
-      padding: 14px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 16px;
-      border-left: 4px solid;
-    }
-    .alert.show { display: flex; align-items: flex-start; gap: 10px; }
-    .alert-success { background: #D1FAE5; border-color: var(--success); color: var(--success); }
-    .alert-error   { background: #FEE2E2; border-color: var(--error);   color: var(--error); }
-    .alert-info    { background: #EEF2FF; border-color: var(--navy);    color: var(--navy); }
+  .section-header {
+    padding: 12px 18px;
+    background: #f9fafb;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-    /* ── BUTTON ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 28px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: background 0.2s, opacity 0.2s;
-    }
-    .btn-primary { background: var(--navy); color: white; }
-    .btn-primary:hover:not(:disabled) { background: var(--navy2); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+  .section-body { padding: 16px 18px; }
 
-    .btn-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .field-grid.full { grid-template-columns: 1fr; }
+  .field-grid.col2 { grid-template-columns: 1fr 1fr; }
+  .field-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
 
-    /* ── LOADING ── */
-    .spinner {
-      display: none;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    .spinner.show { display: inline-block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+  .field-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 
-    /* ── FOOTER ── */
-    footer {
-      background: var(--navy);
-      color: rgba(255,255,255,0.6);
-      text-align: center;
-      font-size: 11px;
-      padding: 16px 32px;
-      margin-top: auto;
-    }
+  .field-group input, .field-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+  }
+  .field-group input:focus, .field-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+  }
+  .field-group input.ocr { background: #fffbeb; border-color: #fcd34d; }
 
-    @media (max-width: 600px) {
-      main { padding: 24px 16px; }
-      header { padding: 0 16px; }
-      .data-grid { grid-template-columns: 1fr; }
-      .data-item.full { grid-column: 1; }
-    }
-  </style>
+  /* Action buttons */
+  .action-bar {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 8px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: 9px 20px; border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--bg); }
+
+  .ocr-note {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: var(--warning-light);
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--warning);
+  }
+  .ocr-note.show { display: block; }
+
+  @media (max-width: 600px) {
+    .field-grid.col2, .field-grid.col3 { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
 
 <header>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Lambang_Provinsi_Jawa_Tengah.svg/120px-Lambang_Provinsi_Jawa_Tengah.svg.png" alt="Logo" />
-  <div class="header-text">
-    <span>SMK NEGERI 1 KISMANTORO</span>
-    <span>Sistem Penerimaan Murid Baru (SPMB) 2026/2027</span>
+  <div class="logo">S</div>
+  <div>
+    <h1>Ekstrak Ajuan Akun SPMB</h1>
+    <p>SMKN 1 Kismantoro — Dinas Pendidikan Prov. Jawa Tengah</p>
   </div>
 </header>
 
-<div class="breadcrumb">
-  <a href="index.html">Beranda</a>
-  <span>›</span>
-  <span>Upload Bukti Pengajuan Akun</span>
-</div>
+<div class="main">
 
-<main>
-  <div class="page-title">Upload Bukti Pengajuan Akun</div>
-  <div class="page-subtitle">Upload file PDF Tanda Bukti Pengajuan Akun dari spmb.jatengprov.go.id</div>
+  <!-- Upload -->
+  <div class="upload-card" id="uploadArea">
+    <input type="file" id="filePDF" accept=".pdf" onchange="handleFile(this.files[0])">
+    <div class="upload-icon">📄</div>
+    <h2>Pilih file PDF Bukti Pengajuan Akun</h2>
+    <p>Klik area ini atau seret file PDF ke sini</p>
+    <span class="btn-browse">Pilih File</span>
+  </div>
 
-  <div id="alertBox" class="alert"></div>
+  <!-- Status -->
+  <div id="statusBar"></div>
 
-  <!-- Upload Card -->
-  <div class="card">
-    <div class="card-title">Pilih File PDF</div>
-
-    <div class="upload-area" id="uploadArea">
-      <input type="file" id="fileInput" accept=".pdf" />
-      <div class="upload-icon">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      </div>
-      <div class="upload-label">Klik atau drag & drop file PDF di sini</div>
-      <div class="upload-hint">Format: PDF · Maks. 10 MB</div>
+  <!-- Preview -->
+  <div id="previewSection">
+    <div class="ocr-note" id="ocrNote">
+      ⚠️ File ini diproses dengan OCR karena berformat gambar. Periksa kembali data sebelum menyimpan.
     </div>
 
-    <div class="file-selected" id="fileSelected">
-      <div class="file-icon">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <!-- Info Pengajuan -->
+    <div class="section-card">
+      <div class="section-header">Info Pengajuan Akun</div>
+      <div class="section-body">
+        <div class="field-grid col2">
+          <div class="field-group">
+            <label>Nomor Peserta</label>
+            <input type="text" id="f_nomorPeserta">
+          </div>
+          <div class="field-group">
+            <label>Waktu Pengajuan</label>
+            <input type="datetime-local" id="f_waktuPengajuan">
+          </div>
+        </div>
       </div>
-      <div>
-        <div class="file-name" id="fileName">–</div>
-        <div class="file-size" id="fileSize">–</div>
-      </div>
-      <button class="file-remove" id="fileRemove" title="Hapus file">✕</button>
     </div>
-  </div>
 
-  <!-- Preview Card -->
-  <div class="card preview-section" id="previewSection">
-    <div class="card-title">Preview Data Terdeteksi</div>
-    <div class="data-grid" id="dataGrid"></div>
-  </div>
+    <!-- Biodata -->
+    <div class="section-card">
+      <div class="section-header">Biodata Siswa</div>
+      <div class="section-body">
+        <div class="field-grid">
+          <div class="field-group" style="grid-column: 1/-1">
+            <label>Nama Lengkap</label>
+            <input type="text" id="f_namaLengkap">
+          </div>
+          <div class="field-group">
+            <label>Jenis Kelamin</label>
+            <select id="f_jenisKelamin">
+              <option value="Laki - laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Tempat Lahir</label>
+            <input type="text" id="f_tempatLahir">
+          </div>
+          <div class="field-group">
+            <label>Tanggal Lahir</label>
+            <input type="date" id="f_tanggalLahir">
+          </div>
+        </div>
+        <div class="field-grid full" style="margin-top:12px">
+          <div class="field-group">
+            <label>Alamat</label>
+            <input type="text" id="f_alamat">
+          </div>
+        </div>
+        <div class="field-grid col3" style="margin-top:12px">
+          <div class="field-group">
+            <label>RT</label>
+            <input type="text" id="f_rt">
+          </div>
+          <div class="field-group">
+            <label>RW</label>
+            <input type="text" id="f_rw">
+          </div>
+          <div class="field-group">
+            <label>Kelurahan</label>
+            <input type="text" id="f_kelurahan">
+          </div>
+          <div class="field-group">
+            <label>Kecamatan</label>
+            <input type="text" id="f_kecamatan">
+          </div>
+          <div class="field-group">
+            <label>Kab/Kota</label>
+            <input type="text" id="f_kabKota">
+          </div>
+          <div class="field-group">
+            <label>Provinsi</label>
+            <input type="text" id="f_provinsi">
+          </div>
+        </div>
+        <div class="field-grid col3" style="margin-top:12px">
+          <div class="field-group">
+            <label>Sekolah Asal</label>
+            <input type="text" id="f_sekolahAsal">
+          </div>
+          <div class="field-group">
+            <label>Jenis Lulusan</label>
+            <input type="text" id="f_jenisLulusan">
+          </div>
+          <div class="field-group">
+            <label>Tahun Lulus</label>
+            <input type="text" id="f_tahunLulus">
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Action -->
-  <div class="btn-group">
-    <button class="btn btn-primary" id="btnKirim" disabled>
-      <span class="spinner" id="spinner"></span>
-      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      Kirim ke Google Sheet
-    </button>
-    <span id="statusText" style="font-size:13px;color:var(--muted);"></span>
-  </div>
-</main>
+    <!-- Data Nilai -->
+    <div class="section-card">
+      <div class="section-header">Data Nilai Siswa</div>
+      <div class="section-body">
+        <div class="field-grid col3">
+          <div class="field-group">
+            <label>Status KETM</label>
+            <select id="f_statusKETM">
+              <option value="Ya">Ya</option>
+              <option value="Tidak">Tidak</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Status Panti Asuhan</label>
+            <select id="f_statusPantiAsuhan">
+              <option value="Ya">Ya</option>
+              <option value="Tidak">Tidak</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Status Putus Sekolah</label>
+            <select id="f_statusPutusSekolah">
+              <option value="Ya">Ya</option>
+              <option value="Tidak">Tidak</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Status Anak Guru</label>
+            <select id="f_statusAnakGuru">
+              <option value="Ya">Ya</option>
+              <option value="Tidak">Tidak</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Nilai Kejuaraan</label>
+            <input type="text" id="f_nilaiKejuaraan">
+          </div>
+          <div class="field-group">
+            <label>Nama Kejuaraan</label>
+            <input type="text" id="f_namaKejuaraan">
+          </div>
+          <div class="field-group">
+            <label>Nomor Piagam</label>
+            <input type="text" id="f_nomorPiagam">
+          </div>
+          <div class="field-group">
+            <label>Tgl Sertifikat Piagam</label>
+            <input type="text" id="f_tglSertifikatPiagam">
+          </div>
+          <div class="field-group">
+            <label>Umur Piagam (bulan)</label>
+            <input type="text" id="f_umurPiagam">
+          </div>
+          <div class="field-group">
+            <label>Organisasi</label>
+            <input type="text" id="f_organisasi">
+          </div>
+          <div class="field-group">
+            <label>Nilai Organisasi</label>
+            <input type="text" id="f_nilaiOrganisasi">
+          </div>
+          <div class="field-group">
+            <label>Status Domisili</label>
+            <input type="text" id="f_statusDomisili">
+          </div>
+          <div class="field-group">
+            <label>NIK</label>
+            <input type="text" id="f_nik">
+          </div>
+          <div class="field-group">
+            <label>Rata-rata Rapor</label>
+            <input type="text" id="f_rataRataRapor">
+          </div>
+        </div>
+      </div>
+    </div>
 
-<footer>
-  SMK Negeri 1 Kismantoro &nbsp;·&nbsp; SPMB 2026/2027 &nbsp;·&nbsp; Dinas Pendidikan Provinsi Jawa Tengah
-</footer>
+    <!-- Data Tambahan -->
+    <div class="section-card">
+      <div class="section-header">Data Tambahan</div>
+      <div class="section-body">
+        <div class="field-grid col3">
+          <div class="field-group">
+            <label>Sekolah Asal Dari</label>
+            <select id="f_sekolahAsalDari">
+              <option value="Dalam Provinsi">Dalam Provinsi</option>
+              <option value="Luar Provinsi">Luar Provinsi</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>No Telepon/WA</label>
+            <input type="text" id="f_noTelepon">
+          </div>
+          <div class="field-group">
+            <label>Tgl Cetak KK</label>
+            <input type="date" id="f_tglCetakKK">
+          </div>
+        </div>
+      </div>
+      <div class="action-bar" style="padding: 0 18px 16px">
+        <button class="btn btn-secondary" onclick="resetForm()">Batal / Upload Ulang</button>
+        <button class="btn btn-primary" id="btnSimpan" onclick="simpanData()">Simpan ke Google Sheet</button>
+      </div>
+    </div>
 
-<!-- pdf.js CDN -->
+  </div><!-- /previewSection -->
+</div><!-- /main -->
+
+<!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Tesseract.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+
 <script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBaWKlzKSJwIV0g0KQvZpGEdwRj6VSsz97Kk8YhXKYdm28DIpZ3VVEEsb1GITNB9KO/exec';
 
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBaWKlzKSJwIV0g0KQvZpGEdwRj6VSsz97Kk8YhXKYdm28DIpZ3VVEEsb1GITNB9KO/exec';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  let extractedData = null;
+// Drag & drop
+const uploadArea = document.getElementById('uploadArea');
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag'));
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadArea.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') handleFile(f);
+  else setStatus('error', 'File harus berformat PDF');
+});
 
-  // ── UI refs ──
-  const fileInput      = document.getElementById('fileInput');
-  const uploadArea     = document.getElementById('uploadArea');
-  const fileSelected   = document.getElementById('fileSelected');
-  const fileName       = document.getElementById('fileName');
-  const fileSize       = document.getElementById('fileSize');
-  const fileRemove     = document.getElementById('fileRemove');
-  const previewSection = document.getElementById('previewSection');
-  const dataGrid       = document.getElementById('dataGrid');
-  const btnKirim       = document.getElementById('btnKirim');
-  const spinner        = document.getElementById('spinner');
-  const alertBox       = document.getElementById('alertBox');
-  const statusText     = document.getElementById('statusText');
+function setStatus(type, msg, loading = false) {
+  const bar = document.getElementById('statusBar');
+  bar.className = type;
+  bar.innerHTML = loading ? `<div class="spinner"></div><span>${msg}</span>` : `<span>${msg}</span>`;
+}
 
-  // ── Drag & drop ──
-  uploadArea.addEventListener('dragover',  e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
-  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
-  uploadArea.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  });
+async function handleFile(file) {
+  if (!file) return;
+  setStatus('info', `Membaca file: ${file.name}`, true);
 
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) handleFile(fileInput.files[0]);
-  });
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-  fileRemove.addEventListener('click', resetFile);
+  let fullText = '';
+  let isImage = false;
 
-  // ── Handle file ──
-  function handleFile(file) {
-    if (file.type !== 'application/pdf') {
-      showAlert('error', 'File harus berformat PDF.');
-      return;
+  // Coba ekstrak teks dari semua halaman
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    fullText += pageText + '\n';
+  }
+
+  // Deteksi apakah PDF berformat gambar (teks sangat sedikit)
+  const cleanText = fullText.replace(/\s+/g, ' ').trim();
+  if (cleanText.length < 200) {
+    isImage = true;
+    setStatus('warning', 'PDF berformat gambar, memproses dengan OCR...', true);
+    fullText = await ocrPDF(pdf);
+  }
+
+  if (!fullText || fullText.trim().length < 100) {
+    setStatus('error', 'Gagal membaca isi PDF. Coba file lain.');
+    return;
+  }
+
+  document.getElementById('ocrNote').classList.toggle('show', isImage);
+  parseAndFill(fullText);
+  setStatus('success', `File berhasil dibaca${isImage ? ' (OCR)' : ''}. Periksa data sebelum menyimpan.`);
+  document.getElementById('previewSection').style.display = 'block';
+  document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function ocrPDF(pdf) {
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 2 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+  // Halaman berikutnya
+  let allText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const pg = await pdf.getPage(i);
+    const vp = pg.getViewport({ scale: 2 });
+    const cv = document.createElement('canvas');
+    cv.width = vp.width; cv.height = vp.height;
+    await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    const result = await Tesseract.recognize(cv, 'ind');
+    allText += result.data.text + '\n';
+  }
+  return allText;
+}
+
+function ambil(text, pattern) {
+  const m = text.match(pattern);
+  return m ? m[1].trim() : '';
+}
+
+function parseAndFill(text) {
+  // Normalisasi
+  const t = text.replace(/\s+/g, ' ').trim();
+
+  // --- Info Pengajuan ---
+  const nomorPeserta = ambil(t, /Nomor Peserta\s+(\d+)/i) ||
+                       ambil(t, /^(\d{10})\b/m);
+
+  // Waktu: format 03-06-2026 10.35.46 atau 03\/06\/26
+  let waktu = ambil(t, /Waktu\s+[\d.]+\s+([\d\-\/]+\s+[\d.]+)/i) ||
+              ambil(t, /(\d{2}[-\/]\d{2}[-\/]\d{4}\s+\d{2}[.:]\d{2}[.:]\d{2})/);
+  const f_waktu = parseWaktu(waktu);
+
+  // --- Biodata ---
+  const namaLengkap = ambil(t, /Nama Lengkap\s+([A-Z][A-Z ]+)/);
+  const jenisKelamin = t.includes('Perempuan') ? 'Perempuan' : 'Laki - laki';
+
+  // Tempat & Tgl Lahir: "WONOGIRI, 2011-03-14"
+  const ttl = ambil(t, /Tempat & Tgl\. Lahir\s+([A-Z]+,\s*[\d\-]+)/i);
+  const [tempatLahir, tanggalLahir] = ttl.includes(',')
+    ? [ttl.split(',')[0].trim(), ttl.split(',')[1].trim()]
+    : [ttl, ''];
+
+  // Alamat: ambil keseluruhan baris setelah "Alamat"
+  const alamatFull = ambil(t, /Alamat\s+([^]+?)(?=Sekolah Asal)/i).replace(/\s+/g, ' ').trim();
+  const alamatParsed = parseAlamat(alamatFull);
+
+  const sekolahAsal = ambil(t, /Sekolah Asal\s+([^\n]+?)(?=\s+Jenis Lulusan)/i);
+  const jenisLulusan = ambil(t, /Jenis Lulusan\s+([^\n]+?)(?=\s+Tahun)/i);
+  const tahunLulus = ambil(t, /Tahun Lulus\s+(\d{4})/i);
+
+  // --- Data Nilai ---
+  const statusKETM = /Status Siswa Keluarga Ekonomi Tidak Mampu[^Y|T]*?(Ya|Tidak)/i.exec(t)?.[1] || 'Tidak';
+  const statusPanti = /Status Anak Panti Asuhan[^Y|T]*?(Ya|Tidak)/i.exec(t)?.[1] || 'Tidak';
+  const statusPutus = /Status Anak Tidak Sekolah[^Y|T]*?(Ya|Tidak)/i.exec(t)?.[1] || 'Tidak';
+  const statusGuru = /Status Anak Guru[^Y|T]*?(Ya|Tidak)/i.exec(t)?.[1] || 'Tidak';
+  const nilaiKejuaraan = ambil(t, /Nilai Kejuaraan\s+([\d.]+)/i);
+  const namaKejuaraan = ambil(t, /Nama Kejuaraan\s+([^\n]+?)(?=\s+Nomor Piagam)/i);
+  const nomorPiagam = ambil(t, /Nomor Piagam\s+([^\s]+)/i);
+  const tglSertifikat = ambil(t, /Tanggal Sertifikat Piagam Kejuaraan\s+([\d\-\/]+)/i);
+  const umurPiagam = ambil(t, /Umur Piagam\s*\(bulan\)\s+(\d+)/i) || '0';
+  const organisasi = ambil(t, /Organisasi\s+([^\n]+?)(?=\s+Nilai Organisasi)/i) || 'Tidak ada Organisasi';
+  const nilaiOrganisasi = ambil(t, /Nilai Organisasi\s+([\d.]+)/i) || '0';
+  const statusDomisili = ambil(t, /Status Domisili Siswa\s+([^\s]+(?:\s+[^\s]+)?)/i);
+  const nik = ambil(t, /NIK\s+([*\d]{16})/i);
+  const rataRata = ambil(t, /Rata\s*-\s*Rata Nilai Rapor\s*([\d.]+)/i);
+
+  // --- Data Tambahan ---
+  const sekolahAsalDari = t.includes('Dalam Provinsi') ? 'Dalam Provinsi' : 'Luar Provinsi';
+  const noTelepon = ambil(t, /No Telepon \(WA\)\s+([\d]+)/i) ||
+                    ambil(t, /No\.?\s*Telp?(?:epon)?\s*\(?WA\)?\s*([\d]+)/i);
+  const tglKK = ambil(t, /Tanggal Cetak Kartu Keluarga\s+([\d\-\/]+)/i);
+
+  // Isi form
+  setField('f_nomorPeserta', nomorPeserta);
+  setField('f_waktuPengajuan', f_waktu);
+  setField('f_namaLengkap', namaLengkap);
+  setSelect('f_jenisKelamin', jenisKelamin);
+  setField('f_tempatLahir', tempatLahir);
+  setField('f_tanggalLahir', tanggalLahir);
+  setField('f_alamat', alamatParsed.alamat);
+  setField('f_rt', alamatParsed.rt);
+  setField('f_rw', alamatParsed.rw);
+  setField('f_kelurahan', alamatParsed.kelurahan);
+  setField('f_kecamatan', alamatParsed.kecamatan);
+  setField('f_kabKota', alamatParsed.kabKota);
+  setField('f_provinsi', alamatParsed.provinsi);
+  setField('f_sekolahAsal', sekolahAsal);
+  setField('f_jenisLulusan', jenisLulusan);
+  setField('f_tahunLulus', tahunLulus);
+  setSelect('f_statusKETM', statusKETM);
+  setSelect('f_statusPantiAsuhan', statusPanti);
+  setSelect('f_statusPutusSekolah', statusPutus);
+  setSelect('f_statusAnakGuru', statusGuru);
+  setField('f_nilaiKejuaraan', nilaiKejuaraan);
+  setField('f_namaKejuaraan', namaKejuaraan);
+  setField('f_nomorPiagam', nomorPiagam);
+  setField('f_tglSertifikatPiagam', tglSertifikat);
+  setField('f_umurPiagam', umurPiagam);
+  setField('f_organisasi', organisasi);
+  setField('f_nilaiOrganisasi', nilaiOrganisasi);
+  setField('f_statusDomisili', statusDomisili);
+  setField('f_nik', nik);
+  setField('f_rataRataRapor', rataRata);
+  setSelect('f_sekolahAsalDari', sekolahAsalDari);
+  setField('f_noTelepon', noTelepon);
+  setField('f_tglCetakKK', tglKK);
+}
+
+function setField(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+function setSelect(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  for (let opt of el.options) {
+    if (opt.value.toLowerCase() === (val || '').toLowerCase()) {
+      el.value = opt.value; return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      showAlert('error', 'Ukuran file maksimal 10 MB.');
-      return;
+  }
+}
+
+function parseWaktu(str) {
+  if (!str) return '';
+  // Format: 03-06-2026 10.35.46
+  const m = str.match(/(\d{2})[-\/](\d{2})[-\/](\d{4})\s+(\d{2})[.:](\d{2})/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}`;
+  return '';
+}
+
+function parseAlamat(str) {
+  // Contoh: GADUNGAN, RT/RW 1/4, Kel. Kismantoro, Kec. Kismantoro, Kab. Wonogiri, Prov. Jawa Tengah
+  const result = { alamat: '', rt: '', rw: '', kelurahan: '', kecamatan: '', kabKota: '', provinsi: '' };
+  if (!str) return result;
+
+  const rtMatch = str.match(/RT\/RW\s+(\d+)\/(\d+)/i);
+  if (rtMatch) { result.rt = rtMatch[1]; result.rw = rtMatch[2]; }
+
+  result.alamat = str.split(/,\s*RT\/RW/i)[0].trim();
+
+  const parts = str.split(',').map(s => s.trim());
+  for (const p of parts) {
+    if (/^Kel\./i.test(p)) result.kelurahan = p;
+    else if (/^Kec\./i.test(p)) result.kecamatan = p;
+    else if (/^Kab\.|^Kota/i.test(p)) result.kabKota = p;
+    else if (/^Prov\./i.test(p)) result.provinsi = p;
+  }
+  return result;
+}
+
+async function simpanData() {
+  const btn = document.getElementById('btnSimpan');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+  setStatus('info', 'Mengirim data ke Google Sheet...', true);
+
+  const payload = {
+    nomorPeserta:       document.getElementById('f_nomorPeserta').value,
+    waktuPengajuan:     document.getElementById('f_waktuPengajuan').value,
+    namaLengkap:        document.getElementById('f_namaLengkap').value,
+    jenisKelamin:       document.getElementById('f_jenisKelamin').value,
+    tempatLahir:        document.getElementById('f_tempatLahir').value,
+    tanggalLahir:       document.getElementById('f_tanggalLahir').value,
+    alamat:             document.getElementById('f_alamat').value,
+    rt:                 document.getElementById('f_rt').value,
+    rw:                 document.getElementById('f_rw').value,
+    kelurahan:          document.getElementById('f_kelurahan').value,
+    kecamatan:          document.getElementById('f_kecamatan').value,
+    kabKota:            document.getElementById('f_kabKota').value,
+    provinsi:           document.getElementById('f_provinsi').value,
+    sekolahAsal:        document.getElementById('f_sekolahAsal').value,
+    jenisLulusan:       document.getElementById('f_jenisLulusan').value,
+    tahunLulus:         document.getElementById('f_tahunLulus').value,
+    statusKETM:         document.getElementById('f_statusKETM').value,
+    statusPantiAsuhan:  document.getElementById('f_statusPantiAsuhan').value,
+    statusPutusSekolah: document.getElementById('f_statusPutusSekolah').value,
+    statusAnakGuru:     document.getElementById('f_statusAnakGuru').value,
+    nilaiKejuaraan:     document.getElementById('f_nilaiKejuaraan').value,
+    namaKejuaraan:      document.getElementById('f_namaKejuaraan').value,
+    nomorPiagam:        document.getElementById('f_nomorPiagam').value,
+    tglSertifikatPiagam:document.getElementById('f_tglSertifikatPiagam').value,
+    umurPiagam:         document.getElementById('f_umurPiagam').value,
+    organisasi:         document.getElementById('f_organisasi').value,
+    nilaiOrganisasi:    document.getElementById('f_nilaiOrganisasi').value,
+    statusDomisili:     document.getElementById('f_statusDomisili').value,
+    nik:                document.getElementById('f_nik').value,
+    rataRataRapor:      document.getElementById('f_rataRataRapor').value,
+    sekolahAsalDari:    document.getElementById('f_sekolahAsalDari').value,
+    noTelepon:          document.getElementById('f_noTelepon').value,
+    tglCetakKK:         document.getElementById('f_tglCetakKK').value,
+  };
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.action === 'insert') {
+      setStatus('success', '✅ Data berhasil ditambahkan ke Google Sheet.');
+    } else if (data.action === 'update') {
+      setStatus('success', '✅ Data berhasil diperbarui di Google Sheet.');
+    } else if (data.action === 'skip') {
+      setStatus('warning', '⚠️ Data tidak diperbarui — data di Sheet sudah lebih baru.');
+    } else {
+      setStatus('error', '❌ Gagal: ' + data.message);
     }
-    hideAlert();
-    fileName.textContent = file.name;
-    fileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
-    fileSelected.classList.add('show');
-    showAlert('info', 'Sedang membaca file PDF...');
-    extractPDF(file);
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('filePDF').value = '';
+
+  } catch (err) {
+    setStatus('error', '❌ Gagal terhubung ke server. Coba lagi.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Simpan ke Google Sheet';
   }
+}
 
-  function resetFile() {
-    fileInput.value = '';
-    fileSelected.classList.remove('show');
-    previewSection.classList.remove('show');
-    extractedData = null;
-    btnKirim.disabled = true;
-    hideAlert();
-    statusText.textContent = '';
-  }
-
-  // ── Extract PDF ──
-  async function extractPDF(file) {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf         = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-      let fullText = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page    = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        fullText += content.items.map(item => item.str).join(' ') + '\n';
-      }
-
-      extractedData = parseAjuan(fullText);
-      renderPreview(extractedData);
-      hideAlert();
-      btnKirim.disabled = false;
-
-    } catch (err) {
-      showAlert('error', 'Gagal membaca PDF: ' + err.message);
-      btnKirim.disabled = true;
-    }
-  }
-
-  // ── Parser Ajuan Akun ──
-  function parseAjuan(text) {
-    const get = (pattern, flags = '') => {
-      const m = text.match(new RegExp(pattern, flags));
-      return m ? m[1].trim() : '';
-    };
-
-    // Nomor Peserta
-    const noPeserta = get('Nomor Peserta\\s+(\\d+)');
-
-    // Nama Lengkap — ambil setelah "Nama Lengkap" sebelum kata berikutnya yang diketahui
-    const namaMatch = text.match(/Nama Lengkap\s+([A-Z][A-Z\s]+?)(?:\s+Jenis Kelamin|\s+Perempuan|\s+Laki)/);
-    const nama = namaMatch ? namaMatch[1].trim() : '';
-
-    // Jenis Kelamin
-    const jk = get('Jenis Kelamin\\s+(Laki[- ]*laki|Perempuan)');
-
-    // Tempat & Tgl Lahir
-    const ttlMatch = text.match(/Tempat\s*&?\s*Tgl\.?\s*Lahir\s+([A-Z]+),\s*([\d\-]+)/i);
-    const tempatLahir = ttlMatch ? ttlMatch[1].trim() : '';
-    const tglLahir    = ttlMatch ? ttlMatch[2].trim() : '';
-
-    // Alamat — format: [jalan], RT/RW [rt]/[rw], Kel. [kel], Kec. [kec], Kab. [kab], Prov. [prov]
-    const alamatMatch = text.match(/Alamat\s+(.*?),\s*RT\/RW\s*([\d\/\-]*),?\s*Kel\.?\s*([^,]+),\s*Kec\.?\s*([^,]+),\s*Kab\.?\s*([^,]+),\s*Prov\.?\s*([^S\n]+)/i);
-    const jalan    = alamatMatch ? alamatMatch[1].trim() : '';
-    const rtrw     = alamatMatch ? alamatMatch[2].trim() : '';
-    const kel      = alamatMatch ? alamatMatch[3].trim() : '';
-    const kec      = alamatMatch ? alamatMatch[4].trim() : '';
-    const kab      = alamatMatch ? alamatMatch[5].trim() : '';
-    const prov     = alamatMatch ? alamatMatch[6].trim() : '';
-
-    // Sekolah Asal
-    const sekolah = get('Sekolah Asal\\s+([^\\n]+?)(?:\\s+Jenis Lulusan|\\s+SMP|\\s+SMA)');
-
-    // Status
-    const statusEkonomi = ambilStatusSetelah(text, 'Status Siswa Keluarga Ekonomi Tidak Mampu');
-    const statusPanti   = ambilStatusSetelah(text, 'Status Anak Panti Asuhan');
-    const statusPutus   = ambilStatusSetelah(text, 'Status Anak Tidak Sekolah');
-
-    // Nilai Kejuaraan & Nama Kejuaraan
-    const nilaiKejuaraan = get('Nilai Kejuaraan\\s+([\\d\\.]+)') || '0';
-    const namaKejuaraan  = get('Nama Kejuaraan\\s+([^\\n]+?)(?:\\s+Nomor Piagam|\\s+0)') || '';
-
-    // Organisasi
-    const orgMatch = text.match(/Tidak ada\s+Organisasi|Organisasi\s+([^\n]+?)(?:\s+Nilai Organisasi|\s+0)/i);
-    const organisasi = orgMatch ? (orgMatch[1] ? orgMatch[1].trim() : 'Tidak ada Organisasi') : '';
-
-    // Nilai Organisasi
-    const nilaiOrg = get('Nilai Organisasi\\s+([\\d\\.]+)') || '0';
-
-    // Rata-rata Rapor
-    const rapor = get('Rata\\s*-\\s*Rata Nilai Rapor\\s+([\\d\\.]+)');
-
-    // Status Domisili
-    const domisili = get('Status Domisili Siswa\\s+(Sesuai KK|Tidak Sesuai KK)');
-
-    // Tanggal Cetak KK
-    const tglKK = get('Tanggal Cetak Kartu Keluarga\\s+([\\d\\-]+)');
-
-    // Sekolah asal dari
-    const asalDari = get('Sekolah asal dari\\s+(Dalam Provinsi|Luar Provinsi)');
-
-    // No WA
-    const noWA = get('No Telepon.*?\\s+(0\\d+)');
-
-    // Lokasi (koordinat domisili dari lembar 2)
-    const latMatch = text.match(/Latitude\s+([\-\d\.]+)/i);
-    const lngMatch = text.match(/Lon[g]?titude\s+([\d\.]+)/i);
-    const lokasi = (latMatch && lngMatch) ? `${latMatch[1].trim()}, ${lngMatch[1].trim()}` : '';
-
-    return {
-      jenis: 'ajuan',
-      'Nomor Peserta':    noPeserta,
-      'NISN':             noPeserta, // di PDF ajuan NISN = Nomor Peserta
-      'Nama Lengkap':     nama,
-      'Jenis Kelamin':    jk,
-      'Tempat Lahir':     tempatLahir,
-      'Tanggal Lahir':    tglLahir,
-      'Alamat':           jalan,
-      'RTRW':             rtrw,
-      'Desa/Kelurahan':   kel,
-      'Kecamatan':        kec,
-      'Kota/Kabupaten':   kab,
-      'Provinsi':         prov,
-      'Sekolah Asal':     sekolah,
-      'Status Siswa Keluarga Ekonomi Tidak Mampu': statusEkonomi,
-      'Status Anak Panti Asuhan':                  statusPanti,
-      'Status Anak Tidak Sekolah (Putus Sekolah)': statusPutus,
-      'Nama Kejuaraan':   namaKejuaraan,
-      'Nilai Kejuaraan':  nilaiKejuaraan,
-      'Organisasi':       organisasi,
-      'Nilai Organisasi': nilaiOrg,
-      'Rata-Rata Nilai Rapor':    rapor,
-      'Status Domisili Siswa':    domisili,
-      'Tanggal Cetak Kartu Keluarga': tglKK,
-      'Sekolah asal dari': asalDari,
-      'No Telepon (WA)':   noWA,
-      'Lokasi':            lokasi,
-    };
-  }
-
-  function ambilStatusSetelah(text, label) {
-    const idx = text.indexOf(label);
-    if (idx === -1) return '';
-    const potongan = text.substring(idx + label.length, idx + label.length + 60);
-    const m = potongan.match(/(Ya|Tidak)/i);
-    return m ? m[1] : '';
-  }
-
-  // ── Render preview ──
-  function renderPreview(data) {
-    const fields = [
-      { label: 'Nomor Peserta',    key: 'Nomor Peserta',    full: false },
-      { label: 'NISN',             key: 'NISN',             full: false },
-      { label: 'Nama Lengkap',     key: 'Nama Lengkap',     full: true  },
-      { label: 'Jenis Kelamin',    key: 'Jenis Kelamin',    full: false },
-      { label: 'Tempat Lahir',     key: 'Tempat Lahir',     full: false },
-      { label: 'Tanggal Lahir',    key: 'Tanggal Lahir',    full: false },
-      { label: 'Alamat',           key: 'Alamat',           full: true  },
-      { label: 'RT/RW',            key: 'RTRW',             full: false },
-      { label: 'Desa/Kelurahan',   key: 'Desa/Kelurahan',   full: false },
-      { label: 'Kecamatan',        key: 'Kecamatan',        full: false },
-      { label: 'Kota/Kabupaten',   key: 'Kota/Kabupaten',   full: false },
-      { label: 'Provinsi',         key: 'Provinsi',         full: false },
-      { label: 'Sekolah Asal',     key: 'Sekolah Asal',     full: true  },
-      { label: 'Sekolah Asal dari',key: 'Sekolah asal dari',full: false },
-      { label: 'No. WA',           key: 'No Telepon (WA)',  full: false },
-      { label: 'Rata-Rata Rapor',  key: 'Rata-Rata Nilai Rapor', full: false },
-      { label: 'Status Ekonomi Tidak Mampu', key: 'Status Siswa Keluarga Ekonomi Tidak Mampu', full: false },
-      { label: 'Status Panti Asuhan',        key: 'Status Anak Panti Asuhan',                  full: false },
-      { label: 'Status Putus Sekolah',       key: 'Status Anak Tidak Sekolah (Putus Sekolah)', full: false },
-      { label: 'Nama Kejuaraan',   key: 'Nama Kejuaraan',   full: false },
-      { label: 'Nilai Kejuaraan',  key: 'Nilai Kejuaraan',  full: false },
-      { label: 'Organisasi',       key: 'Organisasi',       full: false },
-      { label: 'Nilai Organisasi', key: 'Nilai Organisasi', full: false },
-      { label: 'Status Domisili',  key: 'Status Domisili Siswa', full: false },
-      { label: 'Tgl. Cetak KK',   key: 'Tanggal Cetak Kartu Keluarga', full: false },
-      { label: 'Lokasi',           key: 'Lokasi',           full: true  },
-    ];
-
-    dataGrid.innerHTML = fields.map(f => {
-      const val = data[f.key];
-      const isEmpty = !val || val === '';
-      let display = isEmpty ? '–' : val;
-
-      // badge Ya/Tidak
-      if (['Ya','Tidak'].includes(val)) {
-        display = `<span class="badge ${val === 'Ya' ? 'badge-ya' : 'badge-tidak'}">${val}</span>`;
-      }
-
-      return `
-        <div class="data-item ${f.full ? 'full' : ''}">
-          <div class="data-label">${f.label}</div>
-          <div class="data-value ${isEmpty ? 'empty' : ''}">${display}</div>
-        </div>`;
-    }).join('');
-
-    previewSection.classList.add('show');
-  }
-
-  // ── Kirim ke Apps Script ──
-  btnKirim.addEventListener('click', async () => {
-    if (!extractedData) return;
-
-    btnKirim.disabled = true;
-    spinner.classList.add('show');
-    statusText.textContent = 'Mengirim data...';
-    hideAlert();
-
-    try {
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode:   'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(extractedData),
-      });
-
-      showAlert('success', `✓ Data berhasil dikirim ke Google Sheet. Nomor Peserta: ${extractedData['Nomor Peserta']}`);
-      statusText.textContent = '';
-      btnKirim.disabled = false;
-      spinner.classList.remove('show');
-
-    } catch (err) {
-      showAlert('error', 'Gagal mengirim data: ' + err.message);
-      btnKirim.disabled = false;
-      spinner.classList.remove('show');
-      statusText.textContent = '';
-    }
-  });
-
-  // ── Alert helpers ──
-  function showAlert(type, msg) {
-    alertBox.className = `alert alert-${type} show`;
-    alertBox.textContent = msg;
-  }
-  function hideAlert() {
-    alertBox.className = 'alert';
-    alertBox.textContent = '';
-  }
+function resetForm() {
+  document.getElementById('previewSection').style.display = 'none';
+  document.getElementById('statusBar').className = '';
+  document.getElementById('statusBar').innerHTML = '';
+  document.getElementById('filePDF').value = '';
+  document.getElementById('ocrNote').classList.remove('show');
+}
 </script>
 </body>
 </html>
