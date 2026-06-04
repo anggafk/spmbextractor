@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Ajuan Akun – SPMB SMK Negeri 1 Kismantoro</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #002D72;
+      --navy2:  #003D99;
+      --accent: #E8B000;
+      --bg:     #F5F7FA;
+      --white:  #FFFFFF;
+      --text:   #1A1A2E;
+      --muted:  #6B7280;
+      --border: #D1D9E6;
+      --success:#0A7A4B;
+      --error:  #C0392B;
+      --radius: 0px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy);
+      color: var(--white);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 64px;
+      border-bottom: 3px solid var(--accent);
+    }
+    header img { height: 40px; }
+    .header-text { display: flex; flex-direction: column; }
+    .header-text span:first-child { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+    .header-text span:last-child  { font-size: 11px; font-weight: 400; opacity: 0.75; }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 32px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .breadcrumb a { color: var(--navy); text-decoration: none; font-weight: 500; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 6px; }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      padding: 40px 32px;
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--navy);
+      margin-bottom: 24px;
+    }
+
+    /* ── UPLOAD AREA ── */
+    .upload-area {
+      border: 2px dashed var(--border);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .upload-area:hover, .upload-area.drag-over {
+      border-color: var(--navy);
+      background: #F0F4FF;
+    }
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .upload-icon svg { width: 24px; height: 24px; fill: none; stroke: white; stroke-width: 2; }
+    .upload-label { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+    .upload-hint  { font-size: 12px; color: var(--muted); }
+
+    /* file selected state */
+    .file-selected {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: #EEF2FF;
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      margin-top: 12px;
+    }
+    .file-selected.show { display: flex; }
+    .file-icon { width: 36px; height: 36px; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .file-icon svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; }
+    .file-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; word-break: break-all; }
+    .file-size { font-size: 11px; color: var(--muted); }
+    .file-remove { background: none; border: none; cursor: pointer; color: var(--error); font-size: 18px; padding: 0 4px; }
+
+    /* ── PREVIEW DATA ── */
+    .preview-section { display: none; }
+    .preview-section.show { display: block; }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+    .data-item {
+      background: var(--white);
+      padding: 10px 14px;
+    }
+    .data-item.full { grid-column: 1 / -1; }
+    .data-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .data-value { font-size: 13px; color: var(--text); font-weight: 500; min-height: 18px; }
+    .data-value.empty { color: var(--muted); font-style: italic; font-weight: 400; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-ya  { background: #D1FAE5; color: var(--success); }
+    .badge-tidak { background: #FEE2E2; color: var(--error); }
+
+    /* ── ALERT ── */
+    .alert {
+      display: none;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      border-left: 4px solid;
+    }
+    .alert.show { display: flex; align-items: flex-start; gap: 10px; }
+    .alert-success { background: #D1FAE5; border-color: var(--success); color: var(--success); }
+    .alert-error   { background: #FEE2E2; border-color: var(--error);   color: var(--error); }
+    .alert-info    { background: #EEF2FF; border-color: var(--navy);    color: var(--navy); }
+
+    /* ── BUTTON ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-primary { background: var(--navy); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--navy2); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+    .btn-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+    /* ── LOADING ── */
+    .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .spinner.show { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      font-size: 11px;
+      padding: 16px 32px;
+      margin-top: auto;
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 24px 16px; }
+      header { padding: 0 16px; }
+      .data-grid { grid-template-columns: 1fr; }
+      .data-item.full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Lambang_Provinsi_Jawa_Tengah.svg/120px-Lambang_Provinsi_Jawa_Tengah.svg.png" alt="Logo" />
+  <div class="header-text">
+    <span>SMK NEGERI 1 KISMANTORO</span>
+    <span>Sistem Penerimaan Murid Baru (SPMB) 2026/2027</span>
+  </div>
+</header>
+
+<div class="breadcrumb">
+  <a href="index.html">Beranda</a>
+  <span>›</span>
+  <span>Upload Bukti Pengajuan Akun</span>
+</div>
+
+<main>
+  <div class="page-title">Upload Bukti Pengajuan Akun</div>
+  <div class="page-subtitle">Upload file PDF Tanda Bukti Pengajuan Akun dari spmb.jatengprov.go.id</div>
+
+  <div id="alertBox" class="alert"></div>
+
+  <!-- Upload Card -->
+  <div class="card">
+    <div class="card-title">Pilih File PDF</div>
+
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="fileInput" accept=".pdf" />
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-label">Klik atau drag & drop file PDF di sini</div>
+      <div class="upload-hint">Format: PDF · Maks. 10 MB</div>
+    </div>
+
+    <div class="file-selected" id="fileSelected">
+      <div class="file-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="file-name" id="fileName">–</div>
+        <div class="file-size" id="fileSize">–</div>
+      </div>
+      <button class="file-remove" id="fileRemove" title="Hapus file">✕</button>
+    </div>
+  </div>
+
+  <!-- Preview Card -->
+  <div class="card preview-section" id="previewSection">
+    <div class="card-title">Preview Data Terdeteksi</div>
+    <div class="data-grid" id="dataGrid"></div>
+  </div>
+
+  <!-- Action -->
+  <div class="btn-group">
+    <button class="btn btn-primary" id="btnKirim" disabled>
+      <span class="spinner" id="spinner"></span>
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Kirim ke Google Sheet
+    </button>
+    <span id="statusText" style="font-size:13px;color:var(--muted);"></span>
+  </div>
+</main>
+
+<footer>
+  SMK Negeri 1 Kismantoro &nbsp;·&nbsp; SPMB 2026/2027 &nbsp;·&nbsp; Dinas Pendidikan Provinsi Jawa Tengah
+</footer>
+
+<!-- pdf.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBaWKlzKSJwIV0g0KQvZpGEdwRj6VSsz97Kk8YhXKYdm28DIpZ3VVEEsb1GITNB9KO/exec';
+
+  let extractedData = null;
+
+  // ── UI refs ──
+  const fileInput      = document.getElementById('fileInput');
+  const uploadArea     = document.getElementById('uploadArea');
+  const fileSelected   = document.getElementById('fileSelected');
+  const fileName       = document.getElementById('fileName');
+  const fileSize       = document.getElementById('fileSize');
+  const fileRemove     = document.getElementById('fileRemove');
+  const previewSection = document.getElementById('previewSection');
+  const dataGrid       = document.getElementById('dataGrid');
+  const btnKirim       = document.getElementById('btnKirim');
+  const spinner        = document.getElementById('spinner');
+  const alertBox       = document.getElementById('alertBox');
+  const statusText     = document.getElementById('statusText');
+
+  // ── Drag & drop ──
+  uploadArea.addEventListener('dragover',  e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+
+  fileRemove.addEventListener('click', resetFile);
+
+  // ── Handle file ──
+  function handleFile(file) {
+    if (file.type !== 'application/pdf') {
+      showAlert('error', 'File harus berformat PDF.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showAlert('error', 'Ukuran file maksimal 10 MB.');
+      return;
+    }
+    hideAlert();
+    fileName.textContent = file.name;
+    fileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+    fileSelected.classList.add('show');
+    showAlert('info', 'Sedang membaca file PDF...');
+    extractPDF(file);
+  }
+
+  function resetFile() {
+    fileInput.value = '';
+    fileSelected.classList.remove('show');
+    previewSection.classList.remove('show');
+    extractedData = null;
+    btnKirim.disabled = true;
+    hideAlert();
+    statusText.textContent = '';
+  }
+
+  // ── Extract PDF ──
+  async function extractPDF(file) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf         = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page    = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        fullText += content.items.map(item => item.str).join(' ') + '\n';
+      }
+
+      extractedData = parseAjuan(fullText);
+      renderPreview(extractedData);
+      hideAlert();
+      btnKirim.disabled = false;
+
+    } catch (err) {
+      showAlert('error', 'Gagal membaca PDF: ' + err.message);
+      btnKirim.disabled = true;
+    }
+  }
+
+  // ── Parser Ajuan Akun ──
+  function parseAjuan(text) {
+    const get = (pattern, flags = '') => {
+      const m = text.match(new RegExp(pattern, flags));
+      return m ? m[1].trim() : '';
+    };
+
+    // Nomor Peserta
+    const noPeserta = get('Nomor Peserta\\s+(\\d+)');
+
+    // Nama Lengkap — ambil setelah "Nama Lengkap" sebelum kata berikutnya yang diketahui
+    const namaMatch = text.match(/Nama Lengkap\s+([A-Z][A-Z\s]+?)(?:\s+Jenis Kelamin|\s+Perempuan|\s+Laki)/);
+    const nama = namaMatch ? namaMatch[1].trim() : '';
+
+    // Jenis Kelamin
+    const jk = get('Jenis Kelamin\\s+(Laki[- ]*laki|Perempuan)');
+
+    // Tempat & Tgl Lahir
+    const ttlMatch = text.match(/Tempat\s*&?\s*Tgl\.?\s*Lahir\s+([A-Z]+),\s*([\d\-]+)/i);
+    const tempatLahir = ttlMatch ? ttlMatch[1].trim() : '';
+    const tglLahir    = ttlMatch ? ttlMatch[2].trim() : '';
+
+    // Alamat — format: [jalan], RT/RW [rt]/[rw], Kel. [kel], Kec. [kec], Kab. [kab], Prov. [prov]
+    const alamatMatch = text.match(/Alamat\s+(.*?),\s*RT\/RW\s*([\d\/\-]*),?\s*Kel\.?\s*([^,]+),\s*Kec\.?\s*([^,]+),\s*Kab\.?\s*([^,]+),\s*Prov\.?\s*([^S\n]+)/i);
+    const jalan    = alamatMatch ? alamatMatch[1].trim() : '';
+    const rtrw     = alamatMatch ? alamatMatch[2].trim() : '';
+    const kel      = alamatMatch ? alamatMatch[3].trim() : '';
+    const kec      = alamatMatch ? alamatMatch[4].trim() : '';
+    const kab      = alamatMatch ? alamatMatch[5].trim() : '';
+    const prov     = alamatMatch ? alamatMatch[6].trim() : '';
+
+    // Sekolah Asal
+    const sekolah = get('Sekolah Asal\\s+([^\\n]+?)(?:\\s+Jenis Lulusan|\\s+SMP|\\s+SMA)');
+
+    // Status
+    const statusEkonomi = ambilStatusSetelah(text, 'Status Siswa Keluarga Ekonomi Tidak Mampu');
+    const statusPanti   = ambilStatusSetelah(text, 'Status Anak Panti Asuhan');
+    const statusPutus   = ambilStatusSetelah(text, 'Status Anak Tidak Sekolah');
+
+    // Nilai Kejuaraan & Nama Kejuaraan
+    const nilaiKejuaraan = get('Nilai Kejuaraan\\s+([\\d\\.]+)') || '0';
+    const namaKejuaraan  = get('Nama Kejuaraan\\s+([^\\n]+?)(?:\\s+Nomor Piagam|\\s+0)') || '';
+
+    // Organisasi
+    const orgMatch = text.match(/Tidak ada\s+Organisasi|Organisasi\s+([^\n]+?)(?:\s+Nilai Organisasi|\s+0)/i);
+    const organisasi = orgMatch ? (orgMatch[1] ? orgMatch[1].trim() : 'Tidak ada Organisasi') : '';
+
+    // Nilai Organisasi
+    const nilaiOrg = get('Nilai Organisasi\\s+([\\d\\.]+)') || '0';
+
+    // Rata-rata Rapor
+    const rapor = get('Rata\\s*-\\s*Rata Nilai Rapor\\s+([\\d\\.]+)');
+
+    // Status Domisili
+    const domisili = get('Status Domisili Siswa\\s+(Sesuai KK|Tidak Sesuai KK)');
+
+    // Tanggal Cetak KK
+    const tglKK = get('Tanggal Cetak Kartu Keluarga\\s+([\\d\\-]+)');
+
+    // Sekolah asal dari
+    const asalDari = get('Sekolah asal dari\\s+(Dalam Provinsi|Luar Provinsi)');
+
+    // No WA
+    const noWA = get('No Telepon.*?\\s+(0\\d+)');
+
+    // Lokasi (koordinat domisili dari lembar 2)
+    const latMatch = text.match(/Latitude\s+([\-\d\.]+)/i);
+    const lngMatch = text.match(/Lon[g]?titude\s+([\d\.]+)/i);
+    const lokasi = (latMatch && lngMatch) ? `${latMatch[1].trim()}, ${lngMatch[1].trim()}` : '';
+
+    return {
+      jenis: 'ajuan',
+      'Nomor Peserta':    noPeserta,
+      'NISN':             noPeserta, // di PDF ajuan NISN = Nomor Peserta
+      'Nama Lengkap':     nama,
+      'Jenis Kelamin':    jk,
+      'Tempat Lahir':     tempatLahir,
+      'Tanggal Lahir':    tglLahir,
+      'Alamat':           jalan,
+      'RTRW':             rtrw,
+      'Desa/Kelurahan':   kel,
+      'Kecamatan':        kec,
+      'Kota/Kabupaten':   kab,
+      'Provinsi':         prov,
+      'Sekolah Asal':     sekolah,
+      'Status Siswa Keluarga Ekonomi Tidak Mampu': statusEkonomi,
+      'Status Anak Panti Asuhan':                  statusPanti,
+      'Status Anak Tidak Sekolah (Putus Sekolah)': statusPutus,
+      'Nama Kejuaraan':   namaKejuaraan,
+      'Nilai Kejuaraan':  nilaiKejuaraan,
+      'Organisasi':       organisasi,
+      'Nilai Organisasi': nilaiOrg,
+      'Rata-Rata Nilai Rapor':    rapor,
+      'Status Domisili Siswa':    domisili,
+      'Tanggal Cetak Kartu Keluarga': tglKK,
+      'Sekolah asal dari': asalDari,
+      'No Telepon (WA)':   noWA,
+      'Lokasi':            lokasi,
+    };
+  }
+
+  function ambilStatusSetelah(text, label) {
+    const idx = text.indexOf(label);
+    if (idx === -1) return '';
+    const potongan = text.substring(idx + label.length, idx + label.length + 60);
+    const m = potongan.match(/(Ya|Tidak)/i);
+    return m ? m[1] : '';
+  }
+
+  // ── Render preview ──
+  function renderPreview(data) {
+    const fields = [
+      { label: 'Nomor Peserta',    key: 'Nomor Peserta',    full: false },
+      { label: 'NISN',             key: 'NISN',             full: false },
+      { label: 'Nama Lengkap',     key: 'Nama Lengkap',     full: true  },
+      { label: 'Jenis Kelamin',    key: 'Jenis Kelamin',    full: false },
+      { label: 'Tempat Lahir',     key: 'Tempat Lahir',     full: false },
+      { label: 'Tanggal Lahir',    key: 'Tanggal Lahir',    full: false },
+      { label: 'Alamat',           key: 'Alamat',           full: true  },
+      { label: 'RT/RW',            key: 'RTRW',             full: false },
+      { label: 'Desa/Kelurahan',   key: 'Desa/Kelurahan',   full: false },
+      { label: 'Kecamatan',        key: 'Kecamatan',        full: false },
+      { label: 'Kota/Kabupaten',   key: 'Kota/Kabupaten',   full: false },
+      { label: 'Provinsi',         key: 'Provinsi',         full: false },
+      { label: 'Sekolah Asal',     key: 'Sekolah Asal',     full: true  },
+      { label: 'Sekolah Asal dari',key: 'Sekolah asal dari',full: false },
+      { label: 'No. WA',           key: 'No Telepon (WA)',  full: false },
+      { label: 'Rata-Rata Rapor',  key: 'Rata-Rata Nilai Rapor', full: false },
+      { label: 'Status Ekonomi Tidak Mampu', key: 'Status Siswa Keluarga Ekonomi Tidak Mampu', full: false },
+      { label: 'Status Panti Asuhan',        key: 'Status Anak Panti Asuhan',                  full: false },
+      { label: 'Status Putus Sekolah',       key: 'Status Anak Tidak Sekolah (Putus Sekolah)', full: false },
+      { label: 'Nama Kejuaraan',   key: 'Nama Kejuaraan',   full: false },
+      { label: 'Nilai Kejuaraan',  key: 'Nilai Kejuaraan',  full: false },
+      { label: 'Organisasi',       key: 'Organisasi',       full: false },
+      { label: 'Nilai Organisasi', key: 'Nilai Organisasi', full: false },
+      { label: 'Status Domisili',  key: 'Status Domisili Siswa', full: false },
+      { label: 'Tgl. Cetak KK',   key: 'Tanggal Cetak Kartu Keluarga', full: false },
+      { label: 'Lokasi',           key: 'Lokasi',           full: true  },
+    ];
+
+    dataGrid.innerHTML = fields.map(f => {
+      const val = data[f.key];
+      const isEmpty = !val || val === '';
+      let display = isEmpty ? '–' : val;
+
+      // badge Ya/Tidak
+      if (['Ya','Tidak'].includes(val)) {
+        display = `<span class="badge ${val === 'Ya' ? 'badge-ya' : 'badge-tidak'}">${val}</span>`;
+      }
+
+      return `
+        <div class="data-item ${f.full ? 'full' : ''}">
+          <div class="data-label">${f.label}</div>
+          <div class="data-value ${isEmpty ? 'empty' : ''}">${display}</div>
+        </div>`;
+    }).join('');
+
+    previewSection.classList.add('show');
+  }
+
+  // ── Kirim ke Apps Script ──
+  btnKirim.addEventListener('click', async () => {
+    if (!extractedData) return;
+
+    btnKirim.disabled = true;
+    spinner.classList.add('show');
+    statusText.textContent = 'Mengirim data...';
+    hideAlert();
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode:   'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(extractedData),
+      });
+
+      showAlert('success', `✓ Data berhasil dikirim ke Google Sheet. Nomor Peserta: ${extractedData['Nomor Peserta']}`);
+      statusText.textContent = '';
+      btnKirim.disabled = false;
+      spinner.classList.remove('show');
+
+    } catch (err) {
+      showAlert('error', 'Gagal mengirim data: ' + err.message);
+      btnKirim.disabled = false;
+      spinner.classList.remove('show');
+      statusText.textContent = '';
+    }
+  });
+
+  // ── Alert helpers ──
+  function showAlert(type, msg) {
+    alertBox.className = `alert alert-${type} show`;
+    alertBox.textContent = msg;
+  }
+  function hideAlert() {
+    alertBox.className = 'alert';
+    alertBox.textContent = '';
+  }
+</script>
+</body>
+</html>
