@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Extractor Berkas SPMB SMK Negeri 1 Kismantoro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF.js untuk membaca PDF secara lokal di browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-900">
+
+    <!-- Header Atas -->
+    <header class="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="bg-gradient-to-tr from-cyan-500 to-blue-600 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-server text-xl animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg tracking-wide bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">SPMB Data Extractor Hub</h1>
+                <p class="text-xs text-cyan-400 font-mono">SMK Negeri 1 Kismantoro • Dual-Mode Smart Parser</p>
+            </div>
+        </div>
+        <div class="hidden md:flex items-center gap-4">
+            <div class="text-right">
+                <p class="text-[10px] text-slate-400 font-medium">STATUS GERBANG API:</p>
+                <p class="text-xs font-mono text-emerald-400 flex items-center gap-1.5 justify-end">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Terhubung (Sheets Ready)
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-1">
+        
+        <!-- PANEL KIRI: KENDALI & UNGHAH -->
+        <section class="lg:col-span-5 space-y-6 flex flex-col">
+            <!-- Tempat Drop PDF -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 relative group transition-all duration-300 hover:border-cyan-500/50 hover:shadow-2xl shadow-lg">
+                <input type="file" id="pdfFile" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                <div class="border-2 border-dashed border-slate-700 group-hover:border-cyan-500/40 rounded-xl p-8 text-center bg-slate-900/40 transition-colors flex flex-col items-center justify-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-all duration-300 transform group-hover:scale-110">
+                        <i class="fa-solid fa-file-pdf text-3xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">Tarik & Lepas PDF SPMB Anda</p>
+                        <p class="text-xs text-slate-500 mt-1">Mendukung Berkas Ajuan Akun, Verifikasi, & Pendaftaran</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Log -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 flex-1 flex flex-col shadow-lg">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-cyan-400"></i> Log Konsol Validasi
+                </h3>
+                <div id="terminalLog" class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex-1 min-h-[160px] max-h-[220px] overflow-y-auto text-xs font-mono text-slate-400 space-y-2">
+                    <div class="text-cyan-500">> Sistem Siap. Masukkan berkas PDF untuk memulai ekstraksi data otomatis...</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-center text-[11px] font-bold uppercase tracking-wider">
+                    <div id="indicator_akun" class="bg-slate-900 border border-slate-800 text-slate-600 rounded-xl py-2.5 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-user"></i> AJUAN AKUN
+                    </div>
+                    <div id="indicator_daftar" class="bg-slate-900 border border-slate-800 text-slate-600 rounded-xl py-2.5 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-clipboard-list"></i> PENDAFTARAN
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANEL KANAN: PRATINJAU FORM DATA -->
+        <section class="lg:col-span-7">
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-clipboard-check text-cyan-400 text-xl"></i>
+                        <div>
+                            <h2 class="text-sm font-extrabold tracking-wide uppercase text-slate-200">Pratinjau Hasil Ekstraksi</h2>
+                            <p class="text-[11px] text-slate-500">Sesuaikan data sebelum dikirimkan ke Google Sheets</p>
+                        </div>
+                    </div>
+                    <span id="sheetTargetBadge" class="text-[10px] font-mono bg-cyan-950 border border-cyan-800/80 text-cyan-400 px-3 py-1 rounded-full font-bold uppercase tracking-wider hidden">Tab: -</span>
+                </div>
+
+                <button id="btnSubmit" disabled class="w-full bg-slate-800 cursor-not-allowed text-slate-500 font-extrabold py-3.5 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Kirim ke Google Sheets
+                </button>
+
+                <div id="formEmptyState" class="py-24 text-center text-slate-600 space-y-3">
+                    <i class="fa-solid fa-folder-open text-5xl block text-slate-700"></i>
+                    <p class="text-sm font-medium">Belum ada berkas yang di-scan</p>
+                    <p class="text-xs text-slate-600 max-w-xs mx-auto">Silakan seret berkas PDF ke kotak upload di sebelah kiri.</p>
+                </div>
+
+                <form id="dataForm" class="hidden space-y-6 text-sm">
+                    <!-- PROFIL UTAMA -->
+                    <div class="space-y-4">
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase tracking-widest border-l-2 border-cyan-500 pl-2">Informasi Profil Utama</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Nomor Peserta</label>
+                                <input type="text" id="out_no_peserta" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-slate-200 font-semibold focus:outline-none focus:border-cyan-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">NISN</label>
+                                <input type="text" id="out_nisn" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-400 uppercase">Nama Lengkap Siswa</label>
+                            <input type="text" id="out_nama" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-200 font-bold focus:outline-none focus:border-cyan-500 transition-colors">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Kelamin</label>
+                                <input type="text" id="out_jk" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Tempat Lahir</label>
+                                <input type="text" id="out_tempat_lahir" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Tanggal Lahir</label>
+                                <input type="text" id="out_tanggal_lahir" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GEOGRAFIS ALAMAT -->
+                    <div class="space-y-4 bg-slate-900/35 p-4 rounded-xl border border-slate-800/80">
+                        <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i> Logika Uraian Alamat Rumah (Kanan ke Kiri)
+                        </h4>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-400 uppercase">Alamat Rumah (Sisa)</label>
+                            <input type="text" id="out_alamat_sisa" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">RT / RW</label>
+                                <input type="text" id="out_rtrw" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 font-mono focus:outline-none focus:border-blue-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Desa / Kelurahan</label>
+                                <input type="text" id="out_desa" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Kecamatan</label>
+                                <input type="text" id="out_kecamatan" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 transition-colors">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Kota / Kabupaten</label>
+                                <input type="text" id="out_kota" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Provinsi</label>
+                                <input type="text" id="out_provinsi" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 transition-colors">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- JURUSAN & PILIHAN SELEKSI (KHUSUS PENDAFTARAN) -->
+                    <div id="section_pendaftaran_only" class="space-y-4 hidden bg-emerald-950/20 p-4 rounded-xl border border-emerald-800/50">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-medal"></i> Informasi Seleksi & Hasil Jurusan
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Nomor Pendaftaran</label>
+                                <input type="text" id="out_no_pendaftaran" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-slate-200 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Jalur Seleksi</label>
+                                <input type="text" id="out_jalur" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Lokasi Pendaftaran / Jurusan</label>
+                                <input type="text" id="out_lokasi_pendaftaran" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Waktu Daftar</label>
+                                <input type="text" id="out_waktu" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-slate-300 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Nilai Akhir</label>
+                                <input type="text" id="out_nilai_akhir" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono font-bold text-emerald-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Jarak Rumah</label>
+                                <input type="text" id="out_jarak" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Usia Detail</label>
+                                <input type="text" id="out_usia" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 text-xs focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FISIK & OPERATOR (KHUSUS AJUAN/VERIFIKASI) -->
+                    <div id="section_akun_only" class="space-y-4 bg-slate-900/10 p-4 rounded-xl border border-slate-800/80">
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-hospital-user"></i> Status Syarat Fisik & Verifikator
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Sehat / Bebas Warna</label>
+                                <input type="text" id="out_sehat" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Disabilitas</label>
+                                <input type="text" id="out_disabilitas" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Verifikator (Operator)</label>
+                                <input type="text" id="out_operator" class="w-full mt-1.5 p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Sekolah Asal</label>
+                                <input type="text" id="out_sekolah_asal" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Sekolah Asal Dari</label>
+                                <input type="text" id="out_sekolah_asal_dari" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-bold text-slate-400 uppercase block">Lokasi Peta Rumah (Jika Ada)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="out_maps_url" readonly class="flex-1 p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-xs text-cyan-400 focus:outline-none" placeholder="Peta koordinat rumah">
+                                <button type="button" id="btnTestMap" disabled class="px-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-xl text-slate-300 text-xs flex items-center gap-1.5">
+                                    <i class="fa-solid fa-map-marked-alt"></i> Buka Peta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-5 text-center text-[11px] text-slate-600 border-t border-slate-800/80 bg-slate-950/40 font-mono">
+        Sistem Digitalisasi SPMB 2026 • SMK Negeri 1 Kismantoro
+    </footer>
+
+    <!-- LOGIKA SKRIP UTAMA APLIKASI -->
+    <script src="script.js"></script>
+</body>
+</html>
