@@ -581,8 +581,15 @@ function parseAndFill(text) {
                     ambil(t, /No\.?\s*Telp?(?:epon)?\s*\(?WA\)?[\s\S]{1,40}?(0[\d]{8,12})/i);
   const tglKK = ambil(t, /Tanggal Cetak Kartu Keluarga\s+([\d\-\/]+)/i);
 
+  // Pastikan Nomor Peserta 10 digit
+  const nomorPesertaPadded = String(nomorPeserta).padStart(10, '0');
+
+  // Pastikan No Telepon diawali 0
+  let noTeleponFix = String(noTelepon).replace(/\D/g, '');
+  if (noTeleponFix && !noTeleponFix.startsWith('0')) noTeleponFix = '0' + noTeleponFix;
+
   // Isi form
-  setField('f_nomorPeserta', nomorPeserta);
+  setField('f_nomorPeserta', nomorPesertaPadded);
   setField('f_waktuPengajuan', f_waktu);
   setField('f_namaLengkap', namaLengkap);
   setSelect('f_jenisKelamin', jenisKelamin);
@@ -613,7 +620,7 @@ function parseAndFill(text) {
   setField('f_nik', nik);
   setField('f_rataRataRapor', rataRata);
   setSelect('f_sekolahAsalDari', sekolahAsalDari);
-  setField('f_noTelepon', noTelepon);
+  setField('f_noTelepon', noTeleponFix);
   setField('f_tglCetakKK', tglKK);
 }
 
