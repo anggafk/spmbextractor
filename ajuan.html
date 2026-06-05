@@ -571,7 +571,9 @@ function parseAndFill(text) {
   const nilaiOrganisasi = ambil(t, /Nilai Organisasi\s+([\d.]+)/i) || '0';
   const statusDomisili = ambil(t, /Status Domisili Siswa\s+([^\s]+(?:\s+[^\s]+)?)/i);
   const nik = ambil(t, /NIK\s+([*\d]{16})/i);
-  const rataRata = ambil(t, /Rata\s*-\s*Rata Nilai Rapor\s*([\d.]+)/i);
+  // Nilai bisa di bawah label, atau di awal halaman 2 sebelum kata "Keterangan"
+  const rataRata = ambil(t, /Rata\s*-\s*Rata Nilai Rapor\s*(\d{2,3}\.\d+)/i) ||
+                   ambil(t, /(\d{2,3}\.\d+)\s*Keterangan/i);
 
   // --- Data Tambahan ---
   const sekolahAsalDari = t.includes('Dalam Provinsi') ? 'Dalam Provinsi' : 'Luar Provinsi';
