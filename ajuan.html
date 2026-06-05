@@ -590,8 +590,11 @@ function parseAndFill(text) {
                     ambil(t, /(?:Dalam|Luar)\s+Provinsi\s+(0[\d]{8,12})/i) ||
                     ambil(t, /No\.?\s*Telp?(?:epon)?\s*\(?WA\)?[\s\S]{1,40}?(0[\d]{8,12})/i);
   const tglKK = ambil(t, /Tanggal Cetak Kartu Keluarga\s+([\d\-\/]+)/i);
-  const latitude = ambil(t, /Latitude\s*([-\d.]+)/i);
-  const longitude = ambil(t, /Lon[g]?titude\s*([\d.]+)/i);
+  // Format PDF: "Latitude Longtitude -7.577... 110.828..."
+  const latitude = ambil(t, /Latitude\s+Lon[g]?ti?tude\s+([-\d.]+)/i) ||
+                   ambil(t, /Latitude\s*([-\d.]+)/i);
+  const longitude = ambil(t, /Latitude\s+Lon[g]?ti?tude\s+[-\d.]+\s+([\d.]+)/i) ||
+                    ambil(t, /Lon[g]?ti?tude\s*([-\d.]+)/i);
 
   // Pastikan Nomor Peserta 10 digit
   const nomorPesertaPadded = String(nomorPeserta).padStart(10, '0');
