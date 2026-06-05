@@ -421,6 +421,14 @@
             <label>Tgl Cetak KK</label>
             <input type="date" id="f_tglCetakKK">
           </div>
+          <div class="field-group">
+            <label>Latitude</label>
+            <input type="text" id="f_latitude">
+          </div>
+          <div class="field-group">
+            <label>Longitude</label>
+            <input type="text" id="f_longitude">
+          </div>
         </div>
       </div>
       <div class="action-bar" style="padding: 0 18px 16px">
@@ -582,6 +590,8 @@ function parseAndFill(text) {
                     ambil(t, /(?:Dalam|Luar)\s+Provinsi\s+(0[\d]{8,12})/i) ||
                     ambil(t, /No\.?\s*Telp?(?:epon)?\s*\(?WA\)?[\s\S]{1,40}?(0[\d]{8,12})/i);
   const tglKK = ambil(t, /Tanggal Cetak Kartu Keluarga\s+([\d\-\/]+)/i);
+  const latitude = ambil(t, /Latitude\s*([-\d.]+)/i);
+  const longitude = ambil(t, /Lon[g]?titude\s*([\d.]+)/i);
 
   // Pastikan Nomor Peserta 10 digit
   const nomorPesertaPadded = String(nomorPeserta).padStart(10, '0');
@@ -624,6 +634,8 @@ function parseAndFill(text) {
   setSelect('f_sekolahAsalDari', sekolahAsalDari);
   setField('f_noTelepon', noTeleponFix);
   setField('f_tglCetakKK', tglKK);
+  setField('f_latitude', latitude);
+  setField('f_longitude', longitude);
 }
 
 function setField(id, val) {
@@ -708,6 +720,8 @@ async function simpanData() {
     sekolahAsalDari:    document.getElementById('f_sekolahAsalDari').value,
     noTelepon:          document.getElementById('f_noTelepon').value,
     tglCetakKK:         document.getElementById('f_tglCetakKK').value,
+    latitude:           document.getElementById('f_latitude').value,
+    longitude:          document.getElementById('f_longitude').value,
   };
 
   try {
