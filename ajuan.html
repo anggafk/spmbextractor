@@ -507,22 +507,35 @@ async function handleFile(file) {
 }
 
 async function ocrPDF(pdf) {
-  const page = await pdf.getPage(1);
-  const viewport = page.getViewport({ scale: 2 });
-  const canvas = document.createElement('canvas');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-
-  // Halaman berikutnya
   let allText = '';
   for (let i = 1; i <= pdf.numPages; i++) {
     const pg = await pdf.getPage(i);
-    const vp = pg.getViewport({ scale: 2 });
+    // Scale 3 untuk resolusi lebih tinggi = OCR lebih akurat
+    const vp = pg.getViewport({ scale: 3 });
     const cv = document.createElement('canvas');
-    cv.width = vp.width; cv.height = vp.height;
-    await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
-    const result = await Tesseract.recognize(cv, 'ind');
+    cv.width = vp.width;
+    cv.height = vp.height;
+    const ctx = cv.getContext('2d');
+
+    // Render halaman ke canvas
+    await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+
+    // Preprocessing: tingkatkan kontras agar OCR lebih akurat
+    const imageData = ctx.getImageData(0, 0, cv.width, cv.height);
+    const d = imageData.data;
+    for (let j = 0; j < d.length; j += 4) {
+      // Grayscale
+      const avg = 0.299 * d[j] + 0.587 * d[j+1] + 0.114 * d[j+2];
+      // Threshold: piksel gelap jadi hitam, terang jadi putih
+      const val = avg < 180 ? 0 : 255;
+      d[j] = d[j+1] = d[j+2] = val;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // OCR dengan config untuk dokumen
+    const result = await Tesseract.recognize(cv, 'ind', {
+      tessedit_pageseg_mode: '6',  // PSM 6: assume uniform block of text
+    });
     allText += result.data.text + '\n';
   }
   return allText;
